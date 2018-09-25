@@ -1,0 +1,192 @@
+---
+title: "Homework Assignment#2-Explore Gapminder and use dplyr"
+output: 
+  html_document:
+    keep_md: true
+        
+---
+
+
+
+## R Markdown
+## Step1: Loading Gapminder and Tidyverse 
+```{r}
+library(gapminder)
+library(tidyverse)
+library(dplyr)
+```
+
+
+
+## Step2: Tests on the gapminder data frame
+```{r}
+typeof(gapminder)
+class(gapminder)
+ncol(gapminder)
+nrow(gapminder)
+dim(gapminder)
+length(gapminder)
+str(gapminder)
+sapply(gapminder, class)
+sapply(gapminder, typeof)
+
+```
+
+#### The above output gives the basic information about the data frame.
+#### typof() function gives the data type of the function and in this case it is a "List"
+#### nrow() and ncol() functions specify the number of rows and coloumn in the data frame. the output shows that the above data frame has "6 columns and 1704 rows"
+#### dim() represents the dimension of the data frame in the form of matrix that is as rows and columns
+#### str() generates the structure of the entire data frame and also specifies the class and levels of each element.
+#### sapply() specifies the class and type of each individual element of teh data frame. For example, class(country) is "factor", typeof(country) is "interger"
+
+
+
+## Step3: Part(a) Exploring individual variable-categorical; selecting Continent
+#### Here I used a variable "a" to store the entire Continent's column.
+
+```{r}
+a <-select(gapminder, continent)
+summary(a)
+table(a)
+class(a)
+
+ggplot(gapminder) +
+  stat_count(aes(continent, fill=continent))
+
+```
+
+#### The first output gives a brief summary of the variable. It comprises of 5 levels: Africa, Americas, Asia, Europe and Oceania.
+#### table() generates the tabular form of the column
+#### Combining ggplot with stats_count gives a distribution of continents indicating that Africa appeared the maximum number of times in the data set and Oceania appeared the least number of times.
+
+## Step4: Part(b) Exploring individual variable-Quantitative: Selecting lifeExp
+#### Here I used a variable "b" to store the entire lifeExp's column.
+
+```{r}
+b <- select(gapminder, lifeExp)
+summary(b)
+class(b)
+
+ggplot(gapminder, aes(lifeExp)) +
+  geom_histogram(aes(fill=continent))
+```
+
+#### The summary() function gives the distributions of lifeExp in the form of Mean, Median and Quartiles.
+#### The histogram shows that lifeExp of Oceania is least. For the rest of the countries, lifeExp is spread out. 
+
+
+## Step4: Exploring various Plots
+
+#### Plots for two quantitative variables:
+
+```{r}
+gapminder %>% 
+  filter(continent == "Europe" & country %in% c("Austria", "Denmark", "Portugal", "Sweden") ) %>% 
+  ggplot(aes(year, lifeExp)) +
+  geom_point(aes(color=country)) +
+  geom_line(aes(color=country))
+```
+#### The above output shows that as lifeExp increases, gdpPercap also increases. Also, out of the above 4 countries in Europe, Portugal has shown the maximum change.
+
+
+#### Plot for one Quantitative variable: lifeExp
+
+```{r}
+gapminder %>% 
+  filter(continent == "Europe") %>% 
+  ggplot(aes(factor(1), lifeExp)) +
+  geom_violin(width = 0.6) +
+  geom_jitter(aes(color=country), show.legend = FALSE, width = 0.2)
+```
+
+#### The plot shows that the average life expectancy in Europe is between 70-75 years.
+
+#### Plot for one quantitative and one categorical variable
+
+```{r}
+gapminder %>% 
+   filter(continent == "Europe" & country %in% c("Austria", "Denmark", "Portugal", "Sweden") ) %>% 
+  ggplot(aes(country, gdpPercap)) +
+  geom_boxplot(aes(color=country))+
+  geom_jitter(width=0.3)
+```
+
+#### The output from the above plot shows that out of the 4 countries gdpPercap of Portugal is the least. One reason behind could be low life Expectancy.
+
+
+
+## Step5: Other Explorations of ggplots()
+
+#### Exploring Facetting
+
+```{r}
+gapminder %>% 
+  filter(continent != "Europe") %>% 
+  ggplot(aes(lifeExp, gdpPercap)) +
+  scale_y_log10() +
+  geom_point() +
+  facet_wrap(~continent, nrow=4)
+
+```
+#### The above plots were obtained by using the facet_wrap() command which gave the output as 4 different plots each for a particular continent.The common conclusion from all the plots is that lifeExp and gdpPercap have a linear relationship that is as lifeExp increases, gdpPercap increases.
+
+
+#### Exploring geom_smooth()
+
+```{r}
+gapminder %>% 
+  filter(continent != "Europe") %>% 
+  ggplot(aes(lifeExp, gdpPercap)) +
+  scale_y_log10() +
+  geom_point(alpha=0.35) +
+  geom_smooth()
+  
+```
+
+#### geom_smooth gives a smooth curve making data inference much easier. It can be concluded that if lifeExp is less, gdpPercap is low and vice-versa. 
+
+
+#### Exploring dplyr
+```{r}
+gapminder %>% 
+  mutate(ratio = (lifeExp/gdpPercap)) %>% 
+  select(ratio, everything()) %>% 
+  head
+
+  
+```
+#### The above output was obtained using the dplyr function mutate(). It creates a new column by combining two or columns of the data frame. The first column of the output shows the ratio of lifeExp and gdpPercap.
+
+```{r}
+gapminder %>% 
+  filter(continent == "Europe") %>% 
+  summarise(avg_lifeExp = mean(lifeExp), avy_gdp = mean(gdpPercap))
+
+```
+#### The above output was obtained using the dplyr function summarise(). Stat function mean() gave the average lifeExp and gdpPercap of Europe as 71.9 dbl and 14469.5 dbl respectively.
+
+
+
+#### Exploring Tables
+
+#### Loading knitr and kable into R markdown
+
+```{r}
+library(knitr)
+library(kableExtra)
+
+```
+
+
+#### Creating table using the first 6 rows and columns and exploring few some styling options
+
+```{r}
+g <- gapminder[1:6,1:6]
+  kable(g) %>% 
+  kable_styling(bootstrap_options = c("striped")) %>% 
+  row_spec(1:6, background = "yellow")
+
+
+```
+
+## Step6: Commit and Push to github Repo
